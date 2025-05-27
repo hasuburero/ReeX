@@ -1,0 +1,14 @@
+[
+  {
+    "nodename": "test0",
+    "ip": "192.168.0.2",
+    "port": "8080",
+    "workdir": "~/"
+  },
+  {
+    "nodename": "test1",
+    "ip": "192.168.0.3",
+    "port": "80",
+    "workdir": "~/Reex"
+  }
+]

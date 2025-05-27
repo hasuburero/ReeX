@@ -1,0 +1,17 @@
+[
+  {
+    "nodename": "test0",
+    "ip": "192.168.0.2",
+    "authtype": {
+      "passkey": "test1234",
+      "pubkey": "~/.ssh/id_ed25519"
+    }
+  },
+  {
+    "nodename": "test1",
+    "ip": "192.168.0.3",
+    "authtype": {
+      "passkey": "test1234"
+    }
+  }
+]
