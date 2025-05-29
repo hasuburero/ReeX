@@ -1,4 +1,4 @@
-package session
+package confsession
 
 import (
 	"encoding/json"

@@ -6,7 +6,8 @@ agentの起動
 
 - push型
 - 設定ファイルをもとにagentを起動
-  - nodename IP "ssh-pass:xxxx or pubkey:/path/to/pubkey"
+  - nodename IP User "ssh-pass:xxxx or pubkey:/path/to/pubkey"
+  - sudo を使用したければ最初からrootユーザを指定
 - 初回はssh接続を用いたagentのコピー・起動
   - "ps aux"を確認し，既に起動しているかを確認
   - agentをコピー
@@ -27,7 +28,14 @@ agentの起動
 ```
 .
 └── lib/
-    ├── ssh
-    ├── api
-    └── config
+    ├── controller/
+    │   ├── ssh
+    │   ├── exec
+    │   ├── api/
+    │   │   ├── ssh
+    │   │   └── session
+    │   └── config/
+    │       ├── confssh
+    │       └── confsession
+    └── agent
 ```

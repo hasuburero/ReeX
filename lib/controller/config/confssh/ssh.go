@@ -1,4 +1,4 @@
-package global
+package confssh
 
 import (
 	"encoding/json"
@@ -9,6 +9,7 @@ import (
 type Node struct {
 	Nodename string            `json:"nodename"`
 	IP       string            `json:"ip"`
+	User     string            `json:"user"`
 	AuthType map[string]string `json:"authtype"`
 }
 
