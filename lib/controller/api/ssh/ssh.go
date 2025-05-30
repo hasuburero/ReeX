@@ -13,10 +13,6 @@ import (
 )
 
 // section 1
-type SSH struct {
-	Hosts []Host
-}
-
 type Host struct {
 	NodeName string
 	IP       string
@@ -33,7 +29,7 @@ const (
 )
 
 // section3
-func Init(arg []confssh.Node) (map[string]*SSH, error) {
+func Init(arg []confssh.Node) (map[string]*Host, error) {
 	var SSHhosts map[string]*Host = make(map[string]*Host)
 	for _, node := range arg {
 		if node.Nodename == "" {
@@ -44,7 +40,7 @@ func Init(arg []confssh.Node) (map[string]*SSH, error) {
 			return nil, errors.New("Nodename is already exists\n")
 		}
 
-		addr := node.IP
+		addr := node.IP + ":22"
 		user := node.User
 		if user != "root" {
 			fmt.Println("not a root user")
@@ -63,12 +59,12 @@ func Init(arg []confssh.Node) (map[string]*SSH, error) {
 
 			key, err := io.ReadAll(fd)
 			if err != nil {
-				return SSH{}, err
+				return nil, err
 			}
 
 			signer, err := ssh.ParsePrivateKey(key)
 			if err != nil {
-				return SSH{}, err
+				return nil, err
 			}
 
 			config := &ssh.ClientConfig{
