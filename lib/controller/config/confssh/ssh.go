@@ -11,6 +11,7 @@ type Node struct {
 	IP       string            `json:"ip"`
 	User     string            `json:"user"`
 	AuthType map[string]string `json:"authtype"`
+	AgentDir string            `json:"agentdir"`
 }
 
 func Read(filename string) ([]Node, error) {
