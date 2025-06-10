@@ -38,8 +38,19 @@ const (
 func (self *Host) ExecAsync(cmd string) error {
 	conn, err := ssh.Dial("tcp", self.IP+Port, self.SSHconf)
 	if err != nil {
+		return err
 	}
+	defer conn.Close()
+
+	session, err := conn.NewSession()
+	if err != nil {
+		return err
+	}
+	defer session.Close()
+
+	return nil
 }
+
 func (self *Host) Exec(cmd string) ([]byte, error) {
 	conn, err := ssh.Dial("tcp", self.IP+Port, self.SSHconf)
 	if err != nil {
