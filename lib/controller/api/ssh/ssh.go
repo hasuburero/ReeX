@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 import (
@@ -34,7 +35,101 @@ const (
 	AndList = " && "
 )
 
-// section3
+// section
+func (self *Host) Kill(pid string) error {
+	conn, err := ssh.Dial("tcp", self.IP+Port, self.SSHconf)
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	session, err := conn.NewSession()
+	if err != nil {
+		return err
+	}
+	defer session.Close()
+
+	cmd := "kill " + pid
+	output, err := session.CombinedOutput(cmd)
+	if err != nil {
+		return err
+	}
+
+	if len(output) != 0 {
+		return errors.New(string(output))
+	}
+
+	return nil
+}
+
+func (self *Host) GetPid(cmd string) ([]string, error) {
+	const (
+		PidIndex = 1
+		CmdIndex = 10
+	)
+	conn, err := ssh.Dial("tcp", self.IP+Port, self.SSHconf)
+	if err != nil {
+		return []string{}, err
+	}
+	defer conn.Close()
+
+	session, err := conn.NewSession()
+	if err != nil {
+		return []string{}, err
+	}
+	defer session.Close()
+
+	cmd2 := "ps aux | grep '" + cmd + "'"
+	operation := "cd " + self.WorkDir + " && " + cmd2
+	output, err := session.CombinedOutput(operation)
+	if err != nil {
+		return []string{}, err
+	}
+
+	getpid := func(arg, cmd string) []string {
+		lines := strings.Split(arg, "\n")
+		trim := func(arg []string) []string {
+			for i := 0; i < len(arg); i++ {
+				ctx := arg[i]
+
+				if ctx == "" {
+					if i != len(arg)-1 {
+						arg = append(arg[:i], arg[i+1:]...)
+					} else {
+						arg = arg[:i]
+					}
+				}
+			}
+			return arg
+		}
+
+		var result []string
+		for _, ctx := range lines {
+			slice := strings.Split(ctx, " ")
+			slice = trim(slice)
+			if len(slice) < CmdIndex+1 {
+				continue
+			}
+			commands := slice[CmdIndex:]
+			command := ""
+			for i := 0; i < len(commands); i++ {
+				command += commands[i]
+				if i != len(commands)-1 {
+					command += " "
+				}
+			}
+			if command == cmd {
+				result = append(result, slice[PidIndex])
+			}
+		}
+
+		return result
+	}
+
+	pid := getpid(string(output), cmd)
+	return pid, nil
+}
+
 func (self *Host) ExecAsync(cmd string) error {
 	conn, err := ssh.Dial("tcp", self.IP+Port, self.SSHconf)
 	if err != nil {
@@ -47,6 +142,12 @@ func (self *Host) ExecAsync(cmd string) error {
 		return err
 	}
 	defer session.Close()
+
+	operation := "sh -c 'cd " + self.WorkDir + " && nohup " + cmd + " > nohup.out 2>&1 &"
+	err = session.Run(operation)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
