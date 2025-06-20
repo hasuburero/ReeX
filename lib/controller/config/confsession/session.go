@@ -6,30 +6,40 @@ import (
 	"os"
 )
 
+type Config struct {
+	Node  []Node  `json:"node"`
+	Group []Group `json:"group"`
+}
+
+type Group struct {
+	Name     string   `json:"name"`
+	Nodename []string `json:"nodename"`
+}
+
 type Node struct {
 	NodeName string `json:"nodename"`
 	IP       string `json:"ip"`
 	Port     string `json:"port"`
-	Workdir  string `json:"workdir"`
+	Group    string `json:"group"`
 }
 
-func Read(filename string) ([]Node, error) {
+func Read(filename string) (Config, error) {
 	fd, err := os.Open(filename)
 	if err != nil {
-		return []Node{}, err
+		return Config{}, err
 	}
 	defer fd.Close()
 
 	buf, err := io.ReadAll(fd)
 	if err != nil {
-		return []Node{}, err
+		return Config{}, err
 	}
 
-	var nodes []Node
-	err = json.Unmarshal(buf, &nodes)
+	var config Config
+	err = json.Unmarshal(buf, &config)
 	if err != nil {
-		return []Node{}, err
+		return Config{}, err
 	}
 
-	return nodes, nil
+	return config, nil
 }

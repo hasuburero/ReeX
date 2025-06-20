@@ -316,6 +316,7 @@ func Init(arg []confssh.Node) (map[string]*Host, error) {
 		new_host.IP = addr
 		new_host.User = user
 		new_host.SSHconf = config
+		SSHhosts[new_host.NodeName] = new_host
 	}
 
 	return SSHhosts, nil
