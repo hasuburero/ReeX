@@ -17,7 +17,8 @@ func main() {
 	}
 
 	for _, ctx := range Session.Hosts {
-		fmt.Println(ctx)
+		fmt.Print(ctx, " ")
+		fmt.Printf("%p\n", ctx)
 	}
 
 	fmt.Println("")
