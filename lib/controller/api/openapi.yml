@@ -1,0 +1,211 @@
+openapi: 3.0.0
+info:
+  title: User Management API
+  description: This is a simple API for managing user resources.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080/api/v1 # あなたのAPIのベースURLに合わせて変更してください
+    description: Development server
+
+paths:
+  /exec:
+    get:
+      summary: getting the finished transaction
+      operationId: getFinishedStatus
+      tags:
+        - Exec
+      parameters:
+        - name: tid
+          in: query
+          description: Which transaction you want to wait (16 characters)
+          required: false
+          schema:
+            type: integer
+            format: 16char
+      responses:
+        "200":
+          description: Output of command
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Transaction"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    post:
+      summary: Execute a new command
+      operationId: execCommand
+      tags:
+        - Exec
+      requestBody:
+        description: You can set any pid. there are no effect
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Transaction" # 新規ユーザー作成用のスキーマ
+      responses:
+        "201":
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User" # 作成されたユーザー情報
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /users/{userId}:
+    put: # SETというよりはPUTが一般的です。既存リソースの完全な置換に使われます。
+      summary: Update an existing user
+      operationId: updateUser
+      tags:
+        - Users
+      parameters:
+        - name: userId
+          in: path
+          description: ID of the user to update
+          required: true
+          schema:
+            type: string
+            format: uuid # UUID形式のIDを想定
+      requestBody:
+        description: User object with updated information
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User" # 更新するユーザー情報（IDも含む）
+      responses:
+        "200":
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User" # 更新後のユーザー情報
+        "400":
+          description: Invalid input or User ID mismatch
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+components:
+  schemas:
+    Transaction: # トランザクション情報を示すスキーマ()
+      type: object
+      required:
+        - pid
+        - tid
+        - cmd
+      properties:
+        pid:
+          type: string
+          format: uuid
+          description: Unique identifier for the host process
+          example: 1
+        tid:
+          type: string
+          format: uuid
+          description: Unique identifier for the Session transaction
+          example: 1
+        cmd:
+          type: string
+          format: command
+          description: Command you want to execute
+          example: ls
+        output:
+          type: string
+          format: output
+          description: Command output
+          example: main.go test.json
+    User: # ユーザー情報を示すスキーマ（GETレスポンス、PUTリクエスト/レスポンス）
+      type: object
+      required:
+        - id
+        - name
+        - email
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the user
+          example: d290f1ee-6c54-4b01-90e6-d701748f0851
+        name:
+          type: string
+          description: User's full name
+          example: John Doe
+        email:
+          type: string
+          format: email
+          description: User's email address
+          example: john.doe@example.com
+        createdAt:
+          type: string
+          format: date-time
+          description: The date and time the user was created
+          readOnly: true # このフィールドは読み取り専用
+        updatedAt:
+          type: string
+          format: date-time
+          description: The date and time the user was last updated
+          readOnly: true # このフィールドは読み取り専用
+
+    NewUser: # 新規ユーザー作成用のスキーマ（POSTリクエスト）
+      type: object
+      required:
+        - name
+        - email
+      properties:
+        name:
+          type: string
+          description: User's full name
+          example: Jane Smith
+        email:
+          type: string
+          format: email
+          description: User's email address
+          example: jane.smith@example.com
+
+    Error: # エラーレスポンス用の共通スキーマ
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+          description: Error code
+          example: 400
+        message:
+          type: string
+          description: Error message
+          example: Invalid input parameters
