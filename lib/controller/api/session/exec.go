@@ -7,10 +7,22 @@ import (
 	"sync"
 )
 
-type Exec_Struct struct {
+type Error struct {
+	Code    string `json:"code"`
+	Message string `json:"message"`
+}
+
+type Post_Exec_Struct struct {
 	Pid string `json:"pid"`
 	Tid string `json:"tid"`
 	Cmd string `json:"cmd"`
+}
+
+type Get_Exec_Struct struct {
+	Pid    string `json:"pid"`
+	Tid    string `json:"tid"`
+	Cmd    string `json:"cmd"`
+	Output string `json:"output"`
 }
 
 // return
@@ -38,7 +50,7 @@ func (self *Session) Exec(nodename, cmd string) (string, error) {
 	}
 
 	tid := self.NewTid()
-	var ctx Exec_Struct
+	var ctx Post_Exec_Struct
 	ctx.Cmd = cmd
 	ctx.Tid = tid
 
@@ -47,7 +59,7 @@ func (self *Session) Exec(nodename, cmd string) (string, error) {
 		return "", err
 	}
 
-	request, err := http.NewRequest(Post)
+	request, err := http.NewRequest(Post, host., , json)
 
 	return ctx.Pid, nil
 }
