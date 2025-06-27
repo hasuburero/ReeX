@@ -30,7 +30,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Transaction_res"
+                  $ref: "#/components/schemas/Transaction"
         "500":
           description: Internal server error
           content:
@@ -49,14 +49,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Transaction_req"
+              $ref: "#/components/schemas/Transaction"
       responses:
         "200":
           description: Started Execute Command
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Transaction_res"
+                $ref: "#/components/schemas/Transaction"
         "500":
           description: Internal server error
           content:
@@ -76,7 +76,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Transaction_req"
+              $ref: "#/components/schemas/Transaction"
       responses:
         "200":
           description: Killing process successfully
@@ -140,7 +140,7 @@ paths:
 
 components:
   schemas:
-    Transaction_req:
+    Transaction: # トランザクション情報を示すスキーマ()
       type: object
       required:
         - pid
@@ -162,33 +162,6 @@ components:
           format: command
           description: Command you want to execute
           example: ls
-    Transaction_res: # トランザクション情報を示すスキーマ()
-      type: object
-      required:
-        - pid
-        - tid
-        - cmd
-      properties:
-        pid:
-          type: string
-          format: uuid
-          description: Unique identifier for the host process
-          example: 1
-        tid:
-          type: string
-          format: uuid
-          description: Unique identifier for the Session transaction
-          example: 1
-        cmd:
-          type: string
-          format: command
-          description: Command you want to execute
-          example: ls
-        output:
-          type: string
-          format: output
-          description: Command output
-          example: main.go test.json
     Kill:
       type: object
       required:
