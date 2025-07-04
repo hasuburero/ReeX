@@ -1,6 +1,7 @@
 package session
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -59,7 +60,22 @@ func (self *Session) Exec(nodename, cmd string) (string, error) {
 		return "", err
 	}
 
-	request, err := http.NewRequest(Post, host., , json)
+	reqbody := bytes.NewBuffer(json)
+	request, err := http.NewRequest(Post, host.Hostname, reqbody)
+	if err != nil {
+		return "", err
+	}
+
+	client := &http.Client{
+		Transport: &http.Transport{
+			DisableKeepAlives: false,
+		},
+	}
+
+	res, err := client.Do(request)
+	if err != nil {
+		return "", err
+	}
 
 	return ctx.Pid, nil
 }
