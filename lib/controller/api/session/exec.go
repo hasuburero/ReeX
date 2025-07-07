@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"io"
 	"net/http"
 	"sync"
 )
@@ -25,6 +26,11 @@ type Get_Exec_Struct struct {
 	Cmd    string `json:"cmd"`
 	Output string `json:"output"`
 }
+
+const (
+	StatusOK    = http.StatusOK
+	StatusError = 500
+)
 
 // return
 func (self *Session) ExecGroup(group, cmd string) ([]string, error) {
@@ -55,12 +61,12 @@ func (self *Session) Exec(nodename, cmd string) (string, error) {
 	ctx.Cmd = cmd
 	ctx.Tid = tid
 
-	json, err := json.Marshal(ctx)
+	json_buf, err := json.Marshal(ctx)
 	if err != nil {
 		return "", err
 	}
 
-	reqbody := bytes.NewBuffer(json)
+	reqbody := bytes.NewBuffer(json_buf)
 	request, err := http.NewRequest(Post, host.Hostname, reqbody)
 	if err != nil {
 		return "", err
@@ -77,5 +83,28 @@ func (self *Session) Exec(nodename, cmd string) (string, error) {
 		return "", err
 	}
 
-	return ctx.Pid, nil
+	res_body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return "", err
+	}
+	defer res.Body.Close()
+
+	switch res.StatusCode {
+	case StatusOK:
+		var ctx Post_Exec_Struct
+		err = json.Unmarshal(res_body, &ctx)
+		if err != nil {
+			return "", err
+		}
+		return ctx.Pid, nil
+	case StatusError:
+		var ctx Error
+		err = json.Unmarshal(res_body, &ctx)
+		if err != nil {
+			return "", err
+		}
+		return "", errors.New(ctx.Message)
+	default:
+		return "", UnknownError
+	}
 }

@@ -47,6 +47,7 @@ const (
 
 var (
 	NotExistsError = errors.New("Does not exists\n")
+	UnknownError   = errors.New("Unknown Error has occured\n")
 )
 
 var (
