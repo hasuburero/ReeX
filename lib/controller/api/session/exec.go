@@ -33,7 +33,20 @@ const (
 	StatusTimeout = 501
 )
 
-func (self *Session) WaitTids(tids []string, timeout int) error {}
+func (self *Session) WaitTids(tids []string, timeout int) ([]string, error) {
+	var wg sync.WaitGroup
+
+	var finished = make([]string, 0)
+	var errored = make([]string, 0)
+	for _, tid := range tids {
+		wg.Add(1)
+		go func(tid string) {
+			return_tid, err := self.Wait(tid, timeout)
+			//wip
+		}(tid)
+	}
+}
+
 func (self *Session) Wait(tid string, timeout int) (string, error) {
 	self.Mux.Lock()
 	transaction, exists := self.Transactions[tid]
@@ -85,7 +98,6 @@ func (self *Session) Wait(tid string, timeout int) (string, error) {
 		}
 		return "", errors.New(ctx.Message)
 	case StatusTimeout:
-		var ctx Error
 		return "", TimeoutError
 	default:
 		return "", UnknownError
@@ -156,7 +168,7 @@ func (self *Session) Exec(nodename, cmd string) (string, error) {
 	}
 
 	reqbody := bytes.NewBuffer(json_buf)
-	request, err := http.NewRequest(Post, host.HostName+ExecURL, reqbody)
+	request, err := http.NewRequest(Post, host.HostName+ExecPath, reqbody)
 	if err != nil {
 		return "", err
 	}
