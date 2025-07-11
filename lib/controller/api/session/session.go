@@ -2,6 +2,7 @@ package session
 
 import (
 	"errors"
+	"net/http"
 	"strconv"
 	"sync"
 )
@@ -12,26 +13,27 @@ import (
 
 // section1
 type Session struct {
-	Hosts  map[string]*Host
-	Groups map[string]Group
-	Tid    int64
+	Hosts        map[string]*Host
+	Groups       map[string][]*Host
+	Transactions map[string]*Transaction
+	Tid          int64
+	Mux          sync.Mutex
 }
 
 type Host struct {
 	NodeName     string
-	Hostname     string
-	Transactions map[string]Transaction
+	HostName     string
+	Transactions map[string]*Transaction
+	Mux          sync.Mutex
+	Client       *http.Client
 }
 
 type Transaction struct {
-	Tid     string
-	Pid     string
-	Chan    chan bool
-	Command string
-}
-
-type Group struct {
-	Hosts []*Host
+	NodeName string
+	Tid      string
+	Pid      string
+	Chan     chan bool
+	Command  string
 }
 
 // section2
@@ -45,9 +47,16 @@ const (
 	Delete = "DELETE"
 )
 
+const (
+	BasePath = "/api/v1"
+	ExecPath = BasePath + "/exec"
+	KillPath = BasePath + "/kill"
+)
+
 var (
 	NotExistsError = errors.New("Does not exists\n")
 	UnknownError   = errors.New("Unknown Error has occured\n")
+	TimeoutError   = errors.New("timeout\n")
 )
 
 var (
@@ -77,12 +86,18 @@ func NewSession(filename string) (*Session, error) {
 	var new_session = new(Session)
 	new_session.Tid = 1
 	new_session.Hosts = make(map[string]*Host)
-	new_session.Groups = make(map[string]Group)
+	new_session.Groups = make(map[string][]*Host)
+	new_session.Transactions = make(map[string]*Transaction)
 	for _, ctx := range config.Node {
 		var new_host = new(Host)
 		new_host.NodeName = ctx.NodeName
-		new_host.Hostname = ctx.IP + ":" + ctx.Port
-		new_host.Transactions = make(map[string]Transaction)
+		new_host.HostName = ctx.IP + ":" + ctx.Port
+		new_host.Transactions = make(map[string]*Transaction)
+		new_host.Client = &http.Client{
+			Transport: &http.Transport{
+				DisableKeepAlives: false,
+			},
+		}
 		if _, exists := new_session.Hosts[new_host.NodeName]; exists {
 			return nil, errors.New("NodeName is already exists\n")
 		}
@@ -96,14 +111,14 @@ func NewSession(filename string) (*Session, error) {
 
 		var node_buf = make(map[string]*Host)
 		var node_list = make([]*Host, 0)
-		for _, node := range ctx.Nodename {
+		for _, node := range ctx.NodeName {
 			if _, exists := node_buf[node]; exists {
 				return nil, errors.New("NodeName is already exists, inside the Group field\n")
 			}
 			node_buf[node] = new_session.Hosts[node]
 			node_list = append(node_list, new_session.Hosts[node])
 		}
-		new_session.Groups[ctx.Name] = Group{node_list}
+		new_session.Groups[ctx.Name] = node_list
 	}
 	return new_session, nil
 }

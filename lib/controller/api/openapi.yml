@@ -22,6 +22,13 @@ paths:
           schema:
             type: integer
             format: 16char
+        - name: timeout
+          in: query
+          description: Timeout Limit (seconds)
+          required: false
+          schema:
+            type: integer
+            format: 0-signed int32
       responses:
         "200":
           description: Output of command
@@ -33,6 +40,12 @@ paths:
                   $ref: "#/components/schemas/Transaction"
         "500":
           description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "501":
+          description: Target Tid has not been finished
           content:
             application/json:
               schema:
