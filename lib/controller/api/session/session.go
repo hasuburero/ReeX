@@ -13,9 +13,9 @@ import (
 
 // section1
 type Session struct {
-	Hosts        map[string]*Host
-	Groups       map[string][]*Host
-	Transactions map[string]*Transaction
+	Hosts        map[string]*Host        // key:nodename, value: pointer(host)
+	Groups       map[string][]*Host      // key:groupname, value:slice(pointer(host))
+	Transactions map[string]*Transaction // key:tid, value:pointer(transaction)
 	Tid          int64
 	Mux          sync.Mutex
 }
@@ -57,6 +57,7 @@ var (
 	NotExistsError = errors.New("Does not exists\n")
 	UnknownError   = errors.New("Unknown Error has occured\n")
 	TimeoutError   = errors.New("timeout\n")
+	WaitingError   = errors.New("Waiting error occured\n")
 )
 
 var (

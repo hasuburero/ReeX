@@ -38,6 +38,12 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Transaction"
+        "405":
+          description: Method Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorMethod"
         "500":
           description: Internal server error
           content:
@@ -217,6 +223,22 @@ components:
           type: string
           description: Error message
           example: Invalid Transaction id
+
+    ErrorMethod: # Method Not Allowed 用スキーマ
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+          description: Error code
+          example: 405
+        message:
+          type: string
+          description: Error message
+          example: Method Not Allowed
 
     Error: # エラーレスポンス用の共通スキーマ
       type: object

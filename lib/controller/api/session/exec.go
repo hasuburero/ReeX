@@ -33,7 +33,7 @@ const (
 	StatusTimeout = 501
 )
 
-func (self *Session) WaitTids(tids []string, timeout int) ([]string, error) {
+func (self *Session) WaitTids(tids []string, timeout int) ([]string, []string, error) {
 	var wg sync.WaitGroup
 
 	var finished = make([]string, 0)
@@ -42,9 +42,22 @@ func (self *Session) WaitTids(tids []string, timeout int) ([]string, error) {
 		wg.Add(1)
 		go func(tid string) {
 			return_tid, err := self.Wait(tid, timeout)
-			//wip
+			if err != nil {
+				err = errors.New(return_tid + ": " + err.Error())
+				errored = append(errored, return_tid)
+			} else {
+				finished = append(finished, return_tid)
+			}
+			wg.Done()
 		}(tid)
 	}
+
+	wg.Wait()
+
+	if len(errored) != 0 {
+		return finished, errored, WaitingError
+	}
+	return finished, errored, nil
 }
 
 func (self *Session) Wait(tid string, timeout int) (string, error) {
