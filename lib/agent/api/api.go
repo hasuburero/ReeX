@@ -1,8 +1,10 @@
 package api
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
+	"io"
 	"net/http"
 	"sync"
 )
@@ -35,11 +37,18 @@ const (
 	Put    = "PUT"
 	Delete = "DELETE"
 
+	ContentType     = "Content-Type"
+	TextPlain       = "text/plain"
+	ApplicationJson = "application/json"
+	OctetStream     = "application/octet-stream"
+
 	ApiPath  = "/api/v1"
 	ExecPath = ApiPath + "/exec"
 	KillPath = ApiPath + "/kill"
 
-	StatusMethodError = "Method Not Allowed\n"
+	StatusMethodError         = "Method Not Allowed\n"
+	StatusInternalServerError = "Internal Server Error\n"
+	ServerError               = "Server Error\n"
 )
 
 var (
@@ -48,16 +57,25 @@ var (
 	MethodError = errors.New("Invalid Method Error\n")
 )
 
-func MakeError(code int, message string) (Error, error) {
+// setting status code and message to http.ResponseWriter. If error has occured, setting internal server error and err
+func MakeError(w http.ResponseWriter, code int, message string) error {
 	var ctx Error = Error{
 		Code:    code,
 		Message: message,
 	}
 	json_buf, err := json.Marshal(ctx)
 	if err != nil {
-		return
+		w.Header().Add(ContentType, TextPlain)
+		buf := bytes.NewBufferString(ServerError)
+		io.Copy(w, buf)
+		return err
 	}
-	return
+
+	w.WriteHeader(code)
+	buf := bytes.NewBuffer(json_buf)
+	io.Copy(w, buf)
+
+	return nil
 }
 
 func Start(ip string, port string) (Agent, error) {
@@ -74,8 +92,8 @@ func Start(ip string, port string) (Agent, error) {
 		Handler: agent.ServeMux,
 	}
 
-	agent.ServeMux.handleFunc(ExecPath, Exec)
-	agent.ServeMux.handleFunc(KillPath, Kill)
+	agent.ServeMux.HandleFunc(ExecPath, Exec)
+	agent.ServeMux.HandleFunc(KillPath, Kill)
 
 	return agent, nil
 }

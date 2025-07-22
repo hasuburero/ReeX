@@ -37,7 +37,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Transaction"
+                  $ref: "#/components/schemas/TransactionStatus"
         "405":
           description: Method Not Allowed
           content:
@@ -110,6 +110,21 @@ paths:
               schema:
                 $ref: "#/components/schemas/KillErrorWithTid"
 
+  /EmergencyResponseScheme:
+    description: このエンドポイントはサーバで発生したinternal server error以外のステータスを返すものです．get, post, put, delete等で使用できます．
+    get:
+      summary: Emergency Response Scheme
+      tags:
+        - EmergencyResponseScheme
+      responses:
+        "599":
+          description: Emergency Response Scheme
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Something Happened with the Server"
+
   /users/{userId}:
     put: # SETというよりはPUTが一般的です。既存リソースの完全な置換に使われます。
       summary: Update an existing user
@@ -181,6 +196,34 @@ components:
           format: command
           description: Command you want to execute
           example: ls
+    TransactionStatus:
+      type: object
+      required:
+        - pid
+        - tid
+        - cmd
+        - status
+      properties:
+        pid:
+          type: string
+          format: uuid
+          description: Unique identifier fo rthe host process
+          example: 1
+        tid:
+          type: string
+          format: uuid
+          description: Unique identifier for the Session transaction
+          example: 1
+        cmd:
+          type: string
+          format: command
+          description: Command was executed by the host
+          example: ls
+        status:
+          type: string
+          format: status
+          description: transaction status (pending, processing, finished)
+          example: finished
     Kill:
       type: object
       required:

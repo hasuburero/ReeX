@@ -17,27 +17,63 @@ import (
 // external package
 import ()
 
+type Get_Exec_Struct struct{
+	Pid string `json:"pid"`
+	Tid string `json:"tid"`
+	Cmd string `json:"cmd"`
+	Status string `json:"status"`
+}
+
 type Post_Exec_Struct struct {
 	Pid string `json:"pid"`
 	Tid string `json:"tid"`
 	Cmd string `json:"cmd"`
 }
 
-func Get_Exec(w http.ResponseWriter, r *http.Request) {}
+func Get_Exec(w http.ResponseWriter, r *http.Request) {
+	var ctx 
+}
+
 func Post_Exec(w http.ResponseWriter, r *http.Request) {
 	var ctx Post_Exec_Struct
 	req_body, err := io.ReadAll(r.Body)
 	if err != nil {
 		fmt.Println(err)
-		var errctx Error = Error{
-			Code:    500,
-			Message: err.Error(),
-		}
-		json_buf, err = json.Marshal(errctx)
+		err = MakeError(w, http.StatusInternalServerError, StatusInternalServerError)
 		if err != nil {
-
+			fmt.Println(err)
 		}
+		return
 	}
+	defer r.Body.Close()
+
+	err = json.Unmarshal(req_body, &ctx)
+	if err != nil {
+		fmt.Println(err)
+		err = MakeError(w, http.StatusInternalServerError, StatusInternalServerError)
+		if err != nil {
+			fmt.Println(err)
+		}
+		return
+	}
+
+	process := exec.Exec(ctx.Cmd, ctx.Tid)
+
+	ctx.Pid = process.Pid
+	res_json, err := json.Marshal(ctx)
+	if err != nil {
+		fmt.Println(err)
+		err = MakeError(w, http.StatusInternalServerError, StatusInternalServerError)
+		if err != nil {
+			fmt.Println(err)
+		}
+		return
+	}
+
+	res_body := bytes.NewBuffer(res_json)
+	io.Copy(w, res_body)
+
+	return
 }
 
 func Exec(w http.ResponseWriter, r *http.Request) {
