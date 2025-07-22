@@ -17,10 +17,10 @@ import (
 // external package
 import ()
 
-type Get_Exec_Struct struct{
-	Pid string `json:"pid"`
-	Tid string `json:"tid"`
-	Cmd string `json:"cmd"`
+type Get_Exec_Struct struct {
+	Pid    string `json:"pid"`
+	Tid    string `json:"tid"`
+	Cmd    string `json:"cmd"`
 	Status string `json:"status"`
 }
 
@@ -31,7 +31,17 @@ type Post_Exec_Struct struct {
 }
 
 func Get_Exec(w http.ResponseWriter, r *http.Request) {
-	var ctx 
+
+	json_buf, err := json.Marshal()
+	if err != nil {
+		fmt.Println(err)
+		err = MakeError(w, http.StatusInternalServerError, StatusInternalServerError)
+		if err != nil {
+			fmt.Println(err)
+		}
+		return
+	}
+
 }
 
 func Post_Exec(w http.ResponseWriter, r *http.Request) {
