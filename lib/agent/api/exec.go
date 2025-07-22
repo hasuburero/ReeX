@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 )
 
 // internal package
@@ -30,7 +31,32 @@ type Post_Exec_Struct struct {
 	Cmd string `json:"cmd"`
 }
 
+const (
+	KeyTid     = "tid"
+	KeyTimeout = "timeout"
+)
+
 func Get_Exec(w http.ResponseWriter, r *http.Request) {
+	url := r.URL
+	params := url.Query()
+	var timeout int = -1
+	var tid string
+	for key, value := range params {
+		switch key {
+		case KeyTid:
+			tid = value[0]
+		case KeyTimeout:
+			length, err := strconv.Atoi(value[0])
+			if err != nil {
+				continue
+			}
+			timeout = length
+		default:
+			continue
+		}
+	}
+
+	// ここにタイムアウト処理を実装
 
 	json_buf, err := json.Marshal()
 	if err != nil {
