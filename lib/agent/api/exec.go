@@ -36,10 +36,16 @@ const (
 	KeyTimeout = "timeout"
 )
 
+const (
+	defaultTimeout = -1
+)
+
 func Get_Exec(w http.ResponseWriter, r *http.Request) {
 	url := r.URL
 	params := url.Query()
-	var timeout int = -1
+
+	var err error
+	var timeout int = defaultTimeout
 	var tid string
 	for key, value := range params {
 		switch key {
@@ -56,7 +62,19 @@ func Get_Exec(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// ここにタイムアウト処理を実装
+	switch timeout {
+	case defaultTimeout:
+		transaction, err := exec.GetStatus(tid)
+	default:
+		transaction, err := exec.WaitFinish(tid, timeout)
+	}
+
+	if err != nil {
+		fmt.Println()
+	}
+
+	exec.GetStatus()
+	exec.WaitFinish()
 
 	json_buf, err := json.Marshal()
 	if err != nil {

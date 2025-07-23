@@ -41,16 +41,20 @@ const (
 	TransactionIdSize = 16 //16 characters
 	Base              = 10
 
-	Post   = "POST"
-	Get    = "GET"
-	Put    = "PUT"
-	Delete = "DELETE"
+	StatusPending    = "pending"
+	StatusProcessing = "processing"
+	StatusFinished   = "finished"
 )
 
 const (
 	BasePath = "/api/v1"
 	ExecPath = BasePath + "/exec"
 	KillPath = BasePath + "/kill"
+
+	Post   = "POST"
+	Get    = "GET"
+	Put    = "PUT"
+	Delete = "DELETE"
 )
 
 var (
