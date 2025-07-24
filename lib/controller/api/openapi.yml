@@ -38,6 +38,15 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/TransactionStatus"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: "400"
+                message: "Required parameter not found"
         "405":
           description: Method Not Allowed
           content:

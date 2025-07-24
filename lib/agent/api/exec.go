@@ -32,8 +32,9 @@ type Post_Exec_Struct struct {
 }
 
 const (
-	KeyTid     = "tid"
-	KeyTimeout = "timeout"
+	KeySessionID = "sessionid"
+	KeyTid       = "tid"
+	KeyTimeout   = "timeout"
 )
 
 const (
@@ -47,8 +48,11 @@ func Get_Exec(w http.ResponseWriter, r *http.Request) {
 	var err error
 	var timeout int = defaultTimeout
 	var tid string
+	var sessionid string
 	for key, value := range params {
 		switch key {
+		case KeySessionID:
+			sessionid = value[0]
 		case KeyTid:
 			tid = value[0]
 		case KeyTimeout:
@@ -62,19 +66,23 @@ func Get_Exec(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	var status exec.Status
 	switch timeout {
 	case defaultTimeout:
-		transaction, err := exec.GetStatus(tid)
+		status, err = exec.GetStatus(sessionid, tid)
 	default:
-		transaction, err := exec.WaitFinish(tid, timeout)
+		status, err := exec.WaitFinish(tid, timeout)
 	}
 
 	if err != nil {
-		fmt.Println()
+		fmt.Println(err)
 	}
 
-	exec.GetStatus()
-	exec.WaitFinish()
+	var ctx Get_Exec_Struct = Get_Exec_Struct{
+		Pid:    status.Pid,
+		Tid:    status.Tid,
+		Status: status.Status,
+	}
 
 	json_buf, err := json.Marshal()
 	if err != nil {
