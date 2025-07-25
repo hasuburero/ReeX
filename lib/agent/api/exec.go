@@ -71,7 +71,7 @@ func Get_Exec(w http.ResponseWriter, r *http.Request) {
 	case defaultTimeout:
 		status, err = exec.GetStatus(sessionid, tid)
 	default:
-		status, err := exec.WaitFinish(tid, timeout)
+		status, err = exec.WaitFinish(sessionid, tid, timeout)
 	}
 
 	if err != nil {
@@ -84,7 +84,7 @@ func Get_Exec(w http.ResponseWriter, r *http.Request) {
 		Status: status.Status,
 	}
 
-	json_buf, err := json.Marshal()
+	json_buf, err := json.Marshal(ctx)
 	if err != nil {
 		fmt.Println(err)
 		err = MakeError(w, http.StatusInternalServerError, StatusInternalServerError)
@@ -94,6 +94,10 @@ func Get_Exec(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	res_buf := bytes.NewBuffer(json_buf)
+	io.Copy(w, res_buf)
+
+	return
 }
 
 func Post_Exec(w http.ResponseWriter, r *http.Request) {
@@ -119,7 +123,7 @@ func Post_Exec(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	process := exec.Exec(ctx.Cmd, ctx.Tid)
+	process := exec.Exec(ctx.SessionID, ctx.Cmd, ctx.Tid)
 
 	ctx.Pid = process.Pid
 	res_json, err := json.Marshal(ctx)

@@ -9,6 +9,11 @@ import (
 	"sync"
 )
 
+// internal package
+import (
+	"github.com/hasuburero/ReeX/lib/common"
+)
+
 type Transaction struct {
 	Tid     string
 	Pid     string
@@ -32,23 +37,23 @@ type Error struct {
 }
 
 const (
-	Get    = "GET"
-	Post   = "POST"
-	Put    = "PUT"
-	Delete = "DELETE"
+	Get    = http.MethodGet
+	Post   = http.MethodPost
+	Put    = http.MethodPut
+	Delete = http.MethodDelete
 
-	ContentType     = "Content-Type"
-	TextPlain       = "text/plain"
-	ApplicationJson = "application/json"
-	OctetStream     = "application/octet-stream"
+	ContentType     = common.ContentType
+	TextPlain       = common.TextPalin
+	ApplicationJson = common.ApplicationJson
+	OctetStream     = common.OctetStream
 
 	ApiPath  = "/api/v1"
 	ExecPath = ApiPath + "/exec"
 	KillPath = ApiPath + "/kill"
 
-	StatusMethodError         = "Method Not Allowed\n"
-	StatusInternalServerError = "Internal Server Error\n"
-	ServerError               = "Server Error\n"
+	StatusMethodError         = common.StatusMethodError
+	StatusInternalServerError = common.StatusInternalServerError
+	ServerError               = common.ServerError
 )
 
 var (

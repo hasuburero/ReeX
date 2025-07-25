@@ -7,12 +7,20 @@ import (
 	"sync"
 )
 
+// internal package
 import (
+	"github.com/hasuburero/ReeX/lib/common"
 	"github.com/hasuburero/ReeX/lib/controller/config/confsession"
+)
+
+// external package
+import (
+	"github.com/google/uuid"
 )
 
 // section1
 type Session struct {
+	SessionID    string                  // sessionID uuid
 	Hosts        map[string]*Host        // key:nodename, value: pointer(host)
 	Groups       map[string][]*Host      // key:groupname, value:slice(pointer(host))
 	Transactions map[string]*Transaction // key:tid, value:pointer(transaction)
@@ -41,9 +49,10 @@ const (
 	TransactionIdSize = 16 //16 characters
 	Base              = 10
 
-	StatusPending    = "pending"
-	StatusProcessing = "processing"
-	StatusFinished   = "finished"
+	StatusFailed     = common.StatusFailed
+	StatusPending    = common.StatusPending
+	StatusProcessing = common.StatusProcessing
+	StatusFinished   = common.StatusFinished
 )
 
 const (
@@ -51,10 +60,10 @@ const (
 	ExecPath = BasePath + "/exec"
 	KillPath = BasePath + "/kill"
 
-	Post   = "POST"
-	Get    = "GET"
-	Put    = "PUT"
-	Delete = "DELETE"
+	Post   = http.MethodPost
+	Get    = http.MethodGet
+	Put    = http.MethodPut
+	Delete = http.MethodDelete
 )
 
 var (
@@ -89,10 +98,15 @@ func NewSession(filename string) (*Session, error) {
 	}
 
 	var new_session = new(Session)
+	new_session.SessionID, err = uuid.NewRandom()
 	new_session.Tid = 1
 	new_session.Hosts = make(map[string]*Host)
 	new_session.Groups = make(map[string][]*Host)
 	new_session.Transactions = make(map[string]*Transaction)
+	if err != nil {
+		return nil, err
+	}
+
 	for _, ctx := range config.Node {
 		var new_host = new(Host)
 		new_host.NodeName = ctx.NodeName

@@ -210,7 +210,6 @@ components:
       required:
         - pid
         - tid
-        - cmd
         - status
       properties:
         pid:
@@ -223,15 +222,10 @@ components:
           format: uuid
           description: Unique identifier for the Session transaction
           example: 1
-        cmd:
-          type: string
-          format: command
-          description: Command was executed by the host
-          example: ls
         status:
           type: string
           format: status
-          description: transaction status (pending, processing, finished)
+          description: transaction status (failed, pending, processing, finished)
           example: finished
     Kill:
       type: object

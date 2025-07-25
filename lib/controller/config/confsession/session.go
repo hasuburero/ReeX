@@ -13,7 +13,7 @@ type Config struct {
 
 type Group struct {
 	Name     string   `json:"name"`
-	Nodename []string `json:"nodename"`
+	NodeName []string `json:"nodename"`
 }
 
 type Node struct {

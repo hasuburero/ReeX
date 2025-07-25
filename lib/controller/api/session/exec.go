@@ -16,9 +16,10 @@ type Error struct {
 }
 
 type Post_Exec_Struct struct {
-	Pid string `json:"pid"`
-	Tid string `json:"tid"`
-	Cmd string `json:"cmd"`
+	SessionID string `json:"sessionid"`
+	Pid       string `json:"pid"`
+	Tid       string `json:"tid"`
+	Cmd       string `json:"cmd"`
 }
 
 type Get_Exec_Struct struct {
@@ -72,7 +73,8 @@ func (self *Session) Wait(tid string, timeout int) (string, error) {
 		return "", NotExistsError
 	}
 
-	params := "?tid=" + tid
+	params := "?sessionid=" + self.SessionID
+	params += "&tid=" + tid
 	if timeout > 0 {
 		to := strconv.Itoa(timeout)
 		params += "&timeout=" + to
@@ -166,6 +168,7 @@ func (self *Session) Exec(nodename, cmd string) (string, error) {
 
 	tid := self.NewTid()
 	var ctx Post_Exec_Struct
+	ctx.SessionID = self.SessionID
 	ctx.Cmd = cmd
 	ctx.Tid = tid
 
