@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"sync"
+	"os/exec"
 )
 
 func GetStatus(sessionid, tid string) (Status, error) {
@@ -47,6 +48,8 @@ func (self *Session) Exec(tid, cmd string) (string, error) {
 	new_transaction.StatusProcessing = make(chan bool)
 	new_transaction.StatusFinished = make(chan bool)
 
+
+	new_transaction.
 	return pid, nil
 }
 

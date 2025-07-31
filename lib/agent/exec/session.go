@@ -3,6 +3,8 @@ package exec
 import (
 	"errors"
 	"fmt"
+	"io"
+	"os/exec"
 	"sync"
 	"time"
 )
@@ -32,6 +34,11 @@ type Transaction struct {
 	StatusProcessing chan bool
 	StatusFinished   chan bool
 	Mux              sync.Mutex
+
+	Execmd  *exec.Cmd
+	Inpipe  io.WriteCloser
+	Outpipe io.ReadCloser
+	Errpipe io.ReadCloser
 }
 
 const (
