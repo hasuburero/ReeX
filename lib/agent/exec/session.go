@@ -49,11 +49,15 @@ const (
 )
 
 var (
-	SessionIdConflictError  = errors.New("Session IDs are conflicted\n")
-	SessionIdEmptyError     = errors.New("Session ID is Empty\n")
-	TransactionIdEmptyError = errors.New("Transaction ID is Empty\n")
-	InvalidStatusError      = errors.New("Invalid Status Error\n")
-	TimeoutError            = errors.New("Timeout\n")
+	SessionIdConflictError    = errors.New("Session IDs are conflicted\n")
+	SessionIdEmptyError       = errors.New("Session ID is Empty\n")
+	TransactionIdEmptyError   = errors.New("Transaction ID is Empty\n")
+	TransactionIdExistsError  = errors.New("Transaction Id Exists Error\n")
+	TransactionNotExistsError = errors.New("Transaction Not Exists Error\n")
+	InvalidStatusError        = errors.New("Invalid Status Error\n")
+	TimeoutError              = errors.New("Timeout\n")
+	ExecError                 = errors.New("Exec Error\n")
+	KillError                 = errors.New("Kill Error\n")
 )
 
 var (
@@ -92,6 +96,18 @@ func (self *Transaction) WaitFinish(timeout int) (string, error) {
 	case <-time.After(time.Duration(timeout) * time.Second):
 		return "", TimeoutError
 	}
+}
+
+func (self *Session) AddTransaction(transaction *Transaction) error {
+	self.Mux.Lock()
+	_, exists := self.Transactions[transaction.Tid]
+	if exists {
+		return TransactionIdExistsError
+	}
+	self.Transactions[transaction.Tid] = transaction
+	self.Mux.Unlock()
+
+	return nil
 }
 
 func IsSession(sessionid string) (*Session, bool) {

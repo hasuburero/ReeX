@@ -1,11 +1,8 @@
 package exec
 
 import (
-	"fmt"
-	"os"
 	"os/exec"
 	"strings"
-	"sync"
 )
 
 // external package
@@ -46,6 +43,21 @@ func WaitFinish(sessionid, tid string, timeout int) (Status, error) {
 	return Status{Status: status, Pid: transaction.Pid, Tid: transaction.Tid}, nil
 }
 
+func (self *Session) Kill(tid string) error {
+	self.Mux.Lock()
+	transaction, exists := self.Transactions[tid]
+	if !exists {
+		return TransactionNotExistsError
+	}
+	self.Mux.Unlock()
+
+	err := transaction.Execmd.Process.Kill()
+	if err != nil {
+		return KillError
+	}
+	return nil
+}
+
 func (self *Transaction) Wait() {
 	go func() {
 		err := self.Execmd.Wait()
@@ -74,10 +86,19 @@ func (self *Session) Exec(tid, cmd string) (*Transaction, error) {
 	err := new_transaction.Execmd.Start()
 	if err != nil {
 		close(new_transaction.StatusFailed)
+		return nil, ExecError
+	}
+
+	err = self.AddTransaction(new_transaction)
+	if err != nil {
+		close(new_transaction.StatusFailed)
+		new_transaction.Execmd.Process.Kill()
+		return nil, err
 	}
 
 	close(new_transaction.StatusProcessing)
-	return new_transaction, nil
+
+	return new_transaction, err
 }
 
 func Exec(sessionid, tid, cmd string) (string, error) {
@@ -86,7 +107,7 @@ func Exec(sessionid, tid, cmd string) (string, error) {
 		return "", SessionIdEmptyError
 	}
 
-	pid, err := session.Exec(tid, cmd)
+	transaction, err := session.Exec(tid, cmd)
 
-	return pid, err
+	return transaction.Pid, err
 }
