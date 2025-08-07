@@ -3,7 +3,6 @@ package api
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -13,6 +12,7 @@ import (
 // internal package
 import (
 	"github.com/hasuburero/ReeX/lib/agent/exec"
+	"github.com/hasuburero/ReeX/lib/common"
 )
 
 // external package
@@ -65,7 +65,7 @@ func Get_Exec(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 	}
 
-	var ctx Get_Exec_Struct = Get_Exec_Struct{
+	var ctx = common.Get_Exec_Struct{
 		Pid:    status.Pid,
 		Tid:    status.Tid,
 		Status: status.Status,
@@ -88,7 +88,7 @@ func Get_Exec(w http.ResponseWriter, r *http.Request) {
 }
 
 func Post_Exec(w http.ResponseWriter, r *http.Request) {
-	var ctx Post_Exec_Struct
+	var ctx common.Post_Exec_Struct
 	req_body, err := io.ReadAll(r.Body)
 	if err != nil {
 		fmt.Println(err)
@@ -110,9 +110,9 @@ func Post_Exec(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	process := exec.Exec(ctx.SessionID, ctx.Tid, ctx.Cmd)
+	process, err := exec.Exec(ctx.SessionID, ctx.Tid, ctx.Cmd)
 
-	ctx.Pid = process.Pid
+	ctx.Pid = process
 	res_json, err := json.Marshal(ctx)
 	if err != nil {
 		fmt.Println(err)
@@ -137,7 +137,7 @@ func Exec(w http.ResponseWriter, r *http.Request) {
 	case Post:
 		Post_Exec(w, r)
 	default:
-		var ctx Error
+		var ctx common.Error
 		ctx.Code = http.StatusMethodNotAllowed
 		ctx.Message = StatusMethodError
 		json_buf, err := json.Marshal(ctx)

@@ -2,7 +2,6 @@ package exec
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"os/exec"
 	"sync"
