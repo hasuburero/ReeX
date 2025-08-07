@@ -5,4 +5,6 @@ import (
 	"net/http"
 )
 
-func Kill() {}
+func Kill(w http.ResponseWriter, r *http.Request) {
+
+}

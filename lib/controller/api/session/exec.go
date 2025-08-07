@@ -10,23 +10,10 @@ import (
 	"sync"
 )
 
-type Error struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
-}
-
-type Post_Exec_Struct struct {
-	SessionID string `json:"sessionid"`
-	Pid       string `json:"pid"`
-	Tid       string `json:"tid"`
-	Cmd       string `json:"cmd"`
-}
-
-type Get_Exec_Struct struct {
-	Pid string `json:"pid"`
-	Tid string `json:"tid"`
-	Cmd string `json:"cmd"`
-}
+// internal package
+import (
+	"github.com/hasuburero/ReeX/lib/common"
+)
 
 const (
 	StatusOK      = http.StatusOK
@@ -98,7 +85,7 @@ func (self *Session) Wait(tid string, timeout int) (string, error) {
 
 	switch res.StatusCode {
 	case StatusOK:
-		var ctx Get_Exec_Struct
+		var ctx common.Get_Exec_Struct
 		err = json.Unmarshal(resbody, &ctx)
 		if err != nil {
 			return "", err
@@ -106,7 +93,7 @@ func (self *Session) Wait(tid string, timeout int) (string, error) {
 
 		return ctx.Tid, err
 	case StatusError:
-		var ctx Error
+		var ctx common.Error
 		err = json.Unmarshal(resbody, &ctx)
 		if err != nil {
 			return "", err
@@ -167,7 +154,7 @@ func (self *Session) Exec(nodename, cmd string) (string, error) {
 	}
 
 	tid := self.NewTid()
-	var ctx Post_Exec_Struct
+	var ctx common.Post_Exec_Struct
 	ctx.SessionID = self.SessionID
 	ctx.Cmd = cmd
 	ctx.Tid = tid
@@ -202,7 +189,7 @@ func (self *Session) Exec(nodename, cmd string) (string, error) {
 
 	switch res.StatusCode {
 	case StatusOK:
-		var ctx Post_Exec_Struct
+		var ctx common.Post_Exec_Struct
 		err = json.Unmarshal(res_body, &ctx)
 		if err != nil {
 			return "", err
@@ -218,7 +205,7 @@ func (self *Session) Exec(nodename, cmd string) (string, error) {
 		self.Mux.Unlock()
 		return transaction.Tid, nil
 	case StatusError:
-		var ctx Error
+		var ctx common.Error
 		err = json.Unmarshal(res_body, &ctx)
 		if err != nil {
 			return "", err

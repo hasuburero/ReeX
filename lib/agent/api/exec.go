@@ -18,19 +18,6 @@ import (
 // external package
 import ()
 
-type Get_Exec_Struct struct {
-	Pid    string `json:"pid"`
-	Tid    string `json:"tid"`
-	Cmd    string `json:"cmd"`
-	Status string `json:"status"`
-}
-
-type Post_Exec_Struct struct {
-	Pid string `json:"pid"`
-	Tid string `json:"tid"`
-	Cmd string `json:"cmd"`
-}
-
 const (
 	KeySessionID = "sessionid"
 	KeyTid       = "tid"
@@ -123,7 +110,7 @@ func Post_Exec(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	process := exec.Exec(ctx.SessionID, ctx.Cmd, ctx.Tid)
+	process := exec.Exec(ctx.SessionID, ctx.Tid, ctx.Cmd)
 
 	ctx.Pid = process.Pid
 	res_json, err := json.Marshal(ctx)

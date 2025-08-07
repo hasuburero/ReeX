@@ -15,6 +15,13 @@ paths:
       tags:
         - Exec
       parameters:
+        - name: sessionid
+          in: query
+          description: Witch session you want to select
+          required: false
+          schema:
+            type: integer
+            format: 16char
         - name: tid
           in: query
           description: Which transaction you want to wait (16 characters)
@@ -186,10 +193,15 @@ components:
     Transaction: # トランザクション情報を示すスキーマ()
       type: object
       required:
+        - sessionid
         - pid
         - tid
         - cmd
       properties:
+        sessionid:
+          type: string
+          format: uuid
+          description: Unique identifier for the session
         pid:
           type: string
           format: uuid
